@@ -1,0 +1,6 @@
+all:
+  hosts:
+    homelab:
+      ansible_host: fb3d98993e1c.mylabserver.com
+      ansible_user: cloud_user
+      ansible_ssh_private_key_file: ./acg
