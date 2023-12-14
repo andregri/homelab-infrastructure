@@ -1,0 +1,13 @@
+- name: Install Docker and Minikube
+  hosts: all
+  gather_facts: yes
+  become: true
+
+  tasks:
+    - name: Install Docker using role
+      import_role:
+        name: docker
+    
+    - name: Install Minikube using role
+      import_role:
+        name: minikube

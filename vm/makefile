@@ -8,4 +8,4 @@ ping:
 	ansible -m ping all -i inventory.yaml
 
 install:
-	ansible-playbook docker-install.yaml -i inventory.yaml --ask-become-pass
+	ansible-playbook install.yaml -i inventory.yaml --ask-become-pass

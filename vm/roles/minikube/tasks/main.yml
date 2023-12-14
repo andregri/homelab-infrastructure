@@ -1,0 +1,21 @@
+---
+# tasks file for minikube
+- name: Download minikube binary
+  ansible.builtin.get_url:
+    url: https://storage.googleapis.com/minikube/releases/latest/minikube_latest_amd64.deb
+    dest: /opt/minikube_latest_amd64.deb
+
+- name: Install minikube .deb package
+  ansible.builtin.apt:
+    deb: /opt/minikube_latest_amd64.deb
+
+- name: Start minikube
+  ansible.builtin.command: minikube start
+  become_user: "{{ ansible_user }}"
+  become: true
+
+- name: create a symbolic link to minikube's binary named 'kubectl'
+  ansible.builtin.file:
+    src: /usr/bin/minikube
+    dest: /usr/local/bin/kubectl
+    state: link
