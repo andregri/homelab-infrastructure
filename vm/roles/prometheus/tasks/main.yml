@@ -1,0 +1,74 @@
+---
+# tasks file for prometheus
+- name: Download prometheus
+  ansible.builtin.get_url:
+    url: https://github.com/prometheus/prometheus/releases/download/v2.45.1/prometheus-2.45.1.linux-amd64.tar.gz
+    dest: /opt/prometheus-2.45.1.linux-amd64.tar.gz
+
+- name: Download prometheus node exporter
+  ansible.builtin.get_url:
+    url: https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz
+    dest: /opt/node_exporter-1.7.0.linux-amd64.tar.gz
+
+- name: Extract prometheus tgz
+  ansible.builtin.unarchive:
+    src: /opt/prometheus-2.45.1.linux-amd64.tar.gz
+    dest: /opt/
+    remote_src: yes
+
+- name: Extract prometheus node exporter tgz
+  ansible.builtin.unarchive:
+    src: /opt/node_exporter-1.7.0.linux-amd64.tar.gz
+    dest: /opt/
+    remote_src: yes
+
+- name: Copy prometheus binary
+  ansible.builtin.command: install /opt/prometheus-2.45.1.linux-amd64/prometheus /usr/local/bin/prometheus
+
+- name: Copy promtool binary
+  ansible.builtin.command: install /opt/prometheus-2.45.1.linux-amd64/promtool /usr/local/bin/promtool
+
+- name: Install node exporter binary
+  ansible.builtin.command: install /opt/node_exporter-1.7.0.linux-amd64/node_exporter /usr/local/bin/node_exporter
+
+- name: Create directories for prometheus
+  ansible.builtin.file:
+    path: /etc/prometheus
+    state: directory
+    mode: 0755
+
+- name: create /var/lib/promtheus/data
+  file:
+    state: directory
+    path: /var/lib/prometheus/data
+    recurse: true
+    mode: 0755
+
+- name: Copy prometheus config
+  copy:
+    src: prometheus.yml
+    dest: /etc/prometheus/prometheus.yml
+
+- name: put prometheus systemd service file in place
+  copy:
+    src: prometheus.service
+    dest: /etc/systemd/system/prometheus.service
+
+- name: put node exporter systemd service file in place
+  copy:
+    src: prometheus-node-exporter.service
+    dest: /etc/systemd/system/prometheus-node-exporter.service
+
+- name: update systemd and restart node exporter server systemd
+  systemd:
+    daemon-reload: true
+    enabled: true
+    state: restarted
+    name: prometheus-node-exporter
+
+- name: update systemd and restart prometheus server systemd
+  systemd:
+    daemon-reload: true
+    enabled: true
+    state: restarted
+    name: prometheus

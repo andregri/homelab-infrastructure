@@ -19,3 +19,7 @@
     - name: Install Grafana
       import_role:
         name: grafana
+
+    - name: Install Prometheus
+      import_role:
+        name: prometheus
