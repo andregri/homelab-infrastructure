@@ -11,3 +11,7 @@
     - name: Install Minikube using role
       import_role:
         name: minikube
+    
+    - name: Install tools for devops
+      import_role:
+        name: tools
