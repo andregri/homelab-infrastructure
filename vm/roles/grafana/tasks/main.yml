@@ -18,9 +18,31 @@
   ansible.builtin.apt:
     deb: /opt/grafana_10.2.2_amd64.deb
 
+- name: create /var/lib/grafana/dashboards
+  file:
+    state: directory
+    path: /var/lib/grafana/dashboards
+    recurse: true
+    mode: 0755
+
+- name: Provision dashboards
+  copy:
+    src: dashboards.yaml
+    dest: /etc/grafana/provisioning/dashboards/dashboards.yaml
+
+- name: Provision node exporter dashboard
+  copy:
+    src: node-exporter-full-dashboard.json
+    dest: /var/lib/grafana/dashboards/node-exporter-full-dashboard.json
+
+- name: Provision prometheus datasource
+  copy:
+    src: prometheus.yaml
+    dest: /etc/grafana/provisioning/datasources/prometheus.yaml
+
 - name: Start Grafana server with systemd
   ansible.builtin.systemd_service:
-    state: started
+    state: restarted
     name: grafana-server
     daemon_reload: true
     enabled: true
