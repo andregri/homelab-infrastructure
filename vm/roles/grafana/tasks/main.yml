@@ -1,0 +1,32 @@
+---
+# tasks file for grafana
+- name: Install required system packages
+  apt:
+    pkg:
+      - adduser
+      - libfontconfig1
+      - musl
+    state: latest
+    update_cache: true
+
+- name: Download .deb package
+  ansible.builtin.get_url:
+    url: https://dl.grafana.com/oss/release/grafana_10.2.2_amd64.deb
+    dest: /opt/grafana_10.2.2_amd64.deb
+
+- name: Install .deb package
+  ansible.builtin.apt:
+    deb: /opt/grafana_10.2.2_amd64.deb
+
+- name: Start Grafana server with systemd
+  ansible.builtin.systemd_service:
+    state: started
+    name: grafana-server
+    daemon_reload: true
+    enabled: true
+
+- name: Allow all access to tcp port 3000
+  community.general.ufw:
+    rule: allow
+    port: '3000'
+    proto: tcp

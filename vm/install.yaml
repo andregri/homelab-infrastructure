@@ -15,3 +15,7 @@
     - name: Install tools for devops
       import_role:
         name: tools
+
+    - name: Install Grafana
+      import_role:
+        name: grafana
