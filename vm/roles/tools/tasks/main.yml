@@ -3,8 +3,8 @@
 - name: Download container-diff
   ansible.builtin.get_url:
     url: https://storage.googleapis.com/container-diff/latest/container-diff-linux-amd64
-    dest: /opt/minikube_latest_amd64.deb
+    dest: /opt/container-diff-linux-amd64
   
 - name: Install container-diff
-  ansible.builtin.command: install /opt/minikube_latest_amd64.deb /usr/local/bin/container-diff
+  ansible.builtin.command: install /opt/container-diff-linux-amd64 /usr/local/bin/container-diff
   become: true
