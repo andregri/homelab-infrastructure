@@ -1,0 +1,17 @@
+- name: Install Grafana stack
+  hosts: all
+  gather_facts: yes
+  become: true
+
+  tasks:
+    - name: Install Prometheus
+      import_role:
+        name: prometheus
+
+    - name: Install Loki and Promtail
+      import_role:
+        name: logging
+
+    - name: Install Grafana
+      import_role:
+        name: grafana

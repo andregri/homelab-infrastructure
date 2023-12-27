@@ -23,3 +23,7 @@
     - name: Install Prometheus
       import_role:
         name: prometheus
+
+    - name: Install Loki and Promtail
+      import_role:
+        name: logging

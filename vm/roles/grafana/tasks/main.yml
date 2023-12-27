@@ -35,10 +35,20 @@
     src: node-exporter-full-dashboard.json
     dest: /var/lib/grafana/dashboards/node-exporter-full-dashboard.json
 
+- name: Provision loki dashboard
+  copy:
+    src: loki-dashboard.json
+    dest: /var/lib/grafana/dashboards/loki-dashboard.json
+
 - name: Provision prometheus datasource
   copy:
     src: prometheus.yaml
     dest: /etc/grafana/provisioning/datasources/prometheus.yaml
+
+- name: Provision loki datasource
+  copy:
+    src: loki.yaml
+    dest: /etc/grafana/provisioning/datasources/loki.yaml
 
 - name: Start Grafana server with systemd
   ansible.builtin.systemd_service:
