@@ -1,0 +1,46 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgres-cluster
+  namespace: gitea
+  labels:
+    app: gitea
+spec:
+  instances: 3
+
+  # Parameters and pg_hba configuration will be append
+  # to the default ones to make the cluster work
+  postgresql:
+    parameters:
+      listen_addresses: localhost
+      password_encryption: scram-sha-256
+    pg_hba:
+      - local giteadb gitea scram-sha-256
+
+
+  # Require 1Gi of space per instance using default storage class
+  storage:
+    storageClass: local-path
+    size: 10Gi
+
+  managed:
+    roles:
+    - name: app
+      createdb: true
+      login: true
+    - name: gitea
+      ensure: present
+      login: true
+      superuser: false
+      createdb: false
+      createrole: true
+      inherit: false
+      replication: false
+      bypassrls: false
+      connectionLimit: 4
+      validUntil: "2053-04-12T15:04:05Z"
+      inRoles:
+        - pg_monitor
+        - pg_signal_backend
+      passwordSecret:
+        name: gitea-pg-volume
