@@ -6,9 +6,11 @@ metadata:
 spec:
   project: default
   source:
-    chart: grafana-community/grafana
-    repoURL: ghcr.io/grafana-community/helm-charts/grafana  # note: the oci:// syntax is not included.
+    chart: grafana
+    repoURL: https://grafana-community.github.io/helm-charts/grafana-community
     targetRevision: 11.3.2
+    helm:
+      releaseName: grafana
   destination:
-    name: "in-cluster"
+    server: "https://kubernetes.default.svc"
     namespace: monitoring
