@@ -12,7 +12,7 @@ spec:
     helm:
       releaseName: gitea
       valueFiles:
-        - gitea-values.yaml
+        - onprem/gitea/gitea-values.yaml
   destination:
     server: "https://kubernetes.default.svc"
     namespace: gitea
