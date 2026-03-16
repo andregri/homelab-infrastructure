@@ -17,6 +17,7 @@ spec:
     pg_hba:
       - local giteadb gitea scram-sha-256
       - local all all trust
+      - host all all 0.0.0.0/0 gss
 
 
   # Require 1Gi of space per instance using default storage class
