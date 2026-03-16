@@ -11,14 +11,8 @@ spec:
     targetRevision: 12.5.0
     helm:
       releaseName: gitea
-      valuesObject:
-        additionalConfigFromEnvs:
-          - export GITEA__database__HOST="cluster-rw:5432"
-          - export GITEA__database__NAME="giteadb"
-          - export GITEA__database__USER="gitea"
-          - export GITEA__database__PASSWD="gitea"
-        postgresql:
-          enabled: false
+      valueFiles:
+        - gitea-values.yaml
   destination:
     server: "https://kubernetes.default.svc"
     namespace: gitea
