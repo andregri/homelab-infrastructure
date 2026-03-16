@@ -26,10 +26,13 @@ spec:
 
   bootstrap:
     initdb:
-      database: gitea
+      database: giteadb
       owner: gitea
       secret:
         name: gitea-pg-user
+      encoding: UTF8
+      localeCollate: en_US.UTF-8
+      localeCType: en_US.UTF-8
 
   managed:
     roles:
