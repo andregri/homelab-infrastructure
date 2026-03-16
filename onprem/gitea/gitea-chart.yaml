@@ -17,8 +17,8 @@ spec:
           - export GITEA__database__NAME="giteadb"
           - export GITEA__database__USER="gitea"
           - export GITEA__database__PASSWD="gitea"
-      postgresql:
-        enabled: false
+        postgresql:
+          enabled: false
   destination:
     server: "https://kubernetes.default.svc"
     namespace: gitea
