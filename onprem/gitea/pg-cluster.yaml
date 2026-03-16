@@ -15,6 +15,7 @@ spec:
       #listen_addresses: localhost
       password_encryption: scram-sha-256
     pg_hba:
+      - local giteadb gitea password
       - local giteadb gitea scram-sha-256
 
 
