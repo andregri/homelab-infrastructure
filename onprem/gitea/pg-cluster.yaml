@@ -23,11 +23,15 @@ spec:
     storageClass: local-path
     size: 10Gi
 
+  bootstrap:
+    initdb:
+      database: gitea
+      owner: gitea
+      secret:
+        name: cluster-example-app-user
+
   managed:
     roles:
-    - name: app
-      createdb: true
-      login: true
     - name: gitea
       ensure: present
       login: true
