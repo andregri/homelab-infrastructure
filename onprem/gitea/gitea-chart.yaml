@@ -1,21 +1,21 @@
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: gitea
-  namespace: argocd
-spec:
-  project: default
-  source:
-    chart: gitea
-    repoURL: https://dl.gitea.com/charts/
-    targetRevision: 12.5.0
-    helm:
-      releaseName: gitea
-      valueFiles:
-        - onprem/gitea/gitea-values.yaml
-  destination:
-    server: "https://kubernetes.default.svc"
-    namespace: gitea
-  syncPolicy:
-    syncOptions:
-    - CreateNamespace=true
+# apiVersion: argoproj.io/v1alpha1
+# kind: Application
+# metadata:
+#   name: gitea
+#   namespace: argocd
+# spec:
+#   project: default
+#   source:
+#     chart: gitea
+#     repoURL: https://dl.gitea.com/charts/
+#     targetRevision: 12.5.0
+#     helm:
+#       releaseName: gitea
+#       valueFiles:
+#         - onprem/gitea/gitea-values.yaml
+#   destination:
+#     server: "https://kubernetes.default.svc"
+#     namespace: gitea
+#   syncPolicy:
+#     syncOptions:
+#     - CreateNamespace=true

@@ -1,8 +1,19 @@
 gitea:
   additionalConfigFromEnvs:
-    - export GITEA__database__HOST="cluster-rw:5432"
-    - export GITEA__database__NAME="giteadb"
-    - export GITEA__database__USER="gitea"
-    - export GITEA__database__PASSWD="gitea"
+    - name: GITEA__database__HOST
+      value: "cluster-rw:5432"
+    - name: GITEA__database__NAME
+      value: "giteadb"
+    - name: GITEA__database__USER
+      value: "gitea"
+    - name: GITEA__database__PASSWD
+      value: "gitea"
+persistence:
+  storageClass: local-path
+valkey-cluster:
+  persistence:
+    storageClass: local-path
 postgresql:
+  enabled: false
+postgresql-ha:
   enabled: false
