@@ -1,13 +1,12 @@
 gitea:
-  additionalConfigFromEnvs:
-    - name: GITEA__database__HOST
-      value: "cluster-rw:5432"
-    - name: GITEA__database__NAME
-      value: "giteadb"
-    - name: GITEA__database__USER
-      value: "gitea"
-    - name: GITEA__database__PASSWD
-      value: "gitea"
+  config:
+    database:
+      DB_TYPE: postgres
+      HOST: postgres-cluster-rw.gitea.svc.cluster.local:5432
+      NAME: giteadb
+      USER: gitea
+      PASSWD: gitea
+      SCHEMA: gitea
 persistence:
   storageClass: local-path
 valkey-cluster:
