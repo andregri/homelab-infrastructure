@@ -10,7 +10,6 @@ spec:
     repoURL: https://dl.gitea.com/charts/
     targetRevision: 12.5.0
     helm:
-      releaseName: gitea
       valueFiles:
         - gitea-values.yaml
   destination:
