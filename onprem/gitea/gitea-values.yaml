@@ -9,10 +9,19 @@ gitea:
       SCHEMA: gitea
 persistence:
   storageClass: local-path
-valkey-cluster:
-  persistence:
-    storageClass: local-path
 postgresql:
   enabled: false
 postgresql-ha:
   enabled: false
+service:
+  http:
+    type: ClusterIP
+    port: 3000
+    clusterIP:
+  ssh:
+    type: ClusterIP
+    port: 22
+    clusterIP:
+valkey-cluster:
+  persistence:
+    storageClass: local-path

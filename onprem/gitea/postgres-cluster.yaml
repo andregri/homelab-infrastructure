@@ -15,7 +15,7 @@ spec:
       #listen_addresses: localhost
       password_encryption: scram-sha-256
     pg_hba:
-      - host giteadb gitea .gitea.svc.cluster.local scram-sha-256
+      - host giteadb gitea 10.0.0.0/8 scram-sha-256
 
 
   # Require 1Gi of space per instance using default storage class
@@ -33,21 +33,24 @@ spec:
       localeCollate: en_US.UTF-8
       localeCType: en_US.UTF-8
 
-  managed:
-    roles:
-    - name: gitea
-      ensure: present
-      login: true
-      superuser: false
-      createdb: false
-      createrole: true
-      inherit: false
-      replication: false
-      bypassrls: false
-      connectionLimit: 4
-      validUntil: "2053-04-12T15:04:05Z"
-      inRoles:
-        - pg_monitor
-        - pg_signal_backend
-      passwordSecret:
-        name: gitea-pg-volume
+#  superuserSecret:
+#    name: cluster-example-superuser
+
+#  managed:
+#    roles:
+#    - name: gitea
+#      ensure: present
+#      login: true
+#      superuser: false
+#      createdb: false
+#      createrole: true
+#      inherit: false
+#      replication: false
+#      bypassrls: false
+#      connectionLimit: 4
+#      validUntil: "2053-04-12T15:04:05Z"
+#      inRoles:
+#        - pg_monitor
+#        - pg_signal_backend
+#      passwordSecret:
+#        name: postgres-cluster-gitea
