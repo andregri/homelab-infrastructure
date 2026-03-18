@@ -12,11 +12,18 @@ spec:
     targetRevision: 28.13.0
     helm:
       values: |
-        server:
-          persistentVolume:
-            storageClass: local-path
         alertmanager:
           persistence:
+            storageClass: local-path
+        scrapeConfigs:
+          node:
+            enabled: true
+            job_name: ""
+            static_configs:
+              - targets:
+                - localhost:9100
+        server:
+          persistentVolume:
             storageClass: local-path
   destination:
     server: "https://kubernetes.default.svc"
