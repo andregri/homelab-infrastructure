@@ -28,9 +28,9 @@ spec:
           enabled: false
         service:
           http:
-            type: ClusterIP
+            type: NodePort
             port: 3000
-            clusterIP:
+            nodePort: 30773
           ssh:
             type: ClusterIP
             port: 22
