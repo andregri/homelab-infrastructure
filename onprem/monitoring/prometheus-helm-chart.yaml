@@ -10,6 +10,14 @@ spec:
     chart: prometheus
     repoURL: oci://ghcr.io/prometheus-community/charts/prometheus
     targetRevision: 28.13.0
+    helm:
+      values: |
+        server:
+          persistentVolume:
+            storageClass: local-path
+        alertmanager:
+          persistence:
+            storageClass: local-path
   destination:
     server: "https://kubernetes.default.svc"
     namespace: monitoring
