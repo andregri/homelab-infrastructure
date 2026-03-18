@@ -1,15 +1,15 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kube-state-metrics-helm-chart
+  name: prometheus-helm-chart
   namespace: argocd
 spec:
   project: default
   source:
     path: .
-    chart: kube-state-metrics
-    repoURL: oci://ghcr.io/prometheus-community/charts/kube-state-metrics
-    targetRevision: 7.2.1
+    chart: prometheus
+    repoURL: oci://ghcr.io/prometheus-community/charts/prometheus
+    targetRevision: 28.13.0
   destination:
     server: "https://kubernetes.default.svc"
     namespace: monitoring
