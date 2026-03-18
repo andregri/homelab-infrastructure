@@ -13,8 +13,7 @@ spec:
       releaseName: grafana
       values: |
         service:
-          enabled: true
-          type: ClusterIP
+          type: NodePort
   destination:
     server: "https://kubernetes.default.svc"
     namespace: monitoring
