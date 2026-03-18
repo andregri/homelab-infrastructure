@@ -6,8 +6,9 @@ metadata:
 spec:
   project: default
   source:
+    path: .
     chart: prometheus-node-exporter
-    repoURL: ghcr.io/prometheus-community/charts/prometheus-node-exporter
+    repoURL: oci://ghcr.io/prometheus-community/charts/prometheus-node-exporter
     targetRevision: 4.52.1
   destination:
     server: "https://kubernetes.default.svc"
