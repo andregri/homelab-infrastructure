@@ -1,0 +1,14 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus-node-exporter-helm-chart
+  namespace: argocd
+spec:
+  project: default
+  source:
+    chart: prometheus-node-exporter
+    repoURL: ghcr.io/prometheus-community/charts/prometheus-node-exporter
+    targetRevision: 4.52.1
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: monitoring
