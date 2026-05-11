@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lms-deployment
+  namespace: lms
+  labels:
+    app: lms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lms
+  template:
+    metadata:
+      labels:
+        app: lms
+    spec:
+      containers:
+      - name: lms
+        image: ghcr.io/lms-community/lyrionmusicserver:9.1.1
+        ports:
+        - containerPort: 9000
