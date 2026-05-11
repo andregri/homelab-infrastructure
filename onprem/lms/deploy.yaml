@@ -27,12 +27,12 @@ spec:
         - mountPath: /playlist
           name: playlist-volume
           readOnly: true
-  volumes:
-  - name: music-volume
-    hostPath:
-      path: /home/andrea/music-server/music
-      type: Directory
-  - name: playlist-volume
-    hostPath:
-      path: /home/andrea/music-server/playlist
-      type: Directory
+      volumes:
+      - name: music-volume
+        hostPath:
+          path: /home/andrea/music-server/music
+          type: Directory
+      - name: playlist-volume
+        hostPath:
+          path: /home/andrea/music-server/playlist
+          type: Directory
