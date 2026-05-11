@@ -26,6 +26,15 @@ spec:
           readOnly: true
         - mountPath: /playlist
           name: playlist-volume
+          readOnly: false
+        - mountPath: /config
+          name: config-volume
+          readOnly: false
+        - mountPath: /etc/localtime
+          name: localtime-volume
+          readOnly: true
+        - mountPath: /etc/timezone
+          name: timezone-volume
           readOnly: true
       volumes:
       - name: music-volume
@@ -35,4 +44,16 @@ spec:
       - name: playlist-volume
         hostPath:
           path: /home/andrea/music-server/playlist
+          type: Directory
+      - name: config-volume
+        hostPath:
+          path: /home/andrea/music-server/config
+          type: Directory
+      - name: localtime-volume
+        hostPath:
+          path: /etc/localtime
+          type: Directory
+      - name: timezone-volume
+        hostPath:
+          path: /etc/timezone
           type: Directory
