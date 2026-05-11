@@ -9,9 +9,9 @@ spec:
   ports:
   - name: http
     nodePort: 30873
-    port: 9000
+    port: 30873
     protocol: TCP
-    targetPort: 9000
+    targetPort: 30873
   selector:
     app: lms
   type: NodePort
