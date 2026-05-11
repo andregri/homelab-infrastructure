@@ -21,13 +21,30 @@ kind: Service
 metadata:
   labels:
     app: lms
-  name: lms-player
+  name: lms-player-upd
   namespace: lms
 spec:
   ports:
   - name: player
     port: 3483
     protocol: UDP
+    targetPort: 3483
+  selector:
+    app: lms
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: lms
+  name: lms-player-tcp
+  namespace: lms
+spec:
+  ports:
+  - name: player
+    port: 3483
+    protocol: TCP
     targetPort: 3483
   selector:
     app: lms
