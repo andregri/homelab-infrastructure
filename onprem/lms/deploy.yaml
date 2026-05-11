@@ -33,12 +33,6 @@ spec:
         - mountPath: /config
           name: config-volume
           readOnly: false
-        - mountPath: /etc/localtime
-          name: localtime-volume
-          readOnly: true
-        - mountPath: /etc/timezone
-          name: timezone-volume
-          readOnly: true
       volumes:
       - name: music-volume
         hostPath:
@@ -51,12 +45,4 @@ spec:
       - name: config-volume
         hostPath:
           path: /home/andrea/music-server/config
-          type: Directory
-      - name: localtime-volume
-        hostPath:
-          path: /etc/localtime
-          type: Directory
-      - name: timezone-volume
-        hostPath:
-          path: /etc/timezone
           type: Directory
