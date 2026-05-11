@@ -20,3 +20,19 @@ spec:
         image: ghcr.io/lms-community/lyrionmusicserver:9.1.1
         ports:
         - containerPort: 9000
+        volumeMounts:
+        - mountPath: /music
+          name: music-volume
+          readOnly: true
+        - mountPath: /playlist
+          name: playlist-volume
+          readOnly: true
+  volumes:
+  - name: music-volume
+    hostPath:
+      path: /home/andrea/music-server/music
+      type: Directory
+  - name: playlist-volume
+    hostPath:
+      path: /home/andrea/music-server/playlist
+      type: Directory
