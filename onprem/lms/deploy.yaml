@@ -23,6 +23,8 @@ spec:
         env:
         - name: HTTP_PORT
           value: "30873"
+        - name: EXTRA_ARGS
+          value: "--advertiseaddr=192.168.1.74"
         volumeMounts:
         - mountPath: /music
           name: music-volume
