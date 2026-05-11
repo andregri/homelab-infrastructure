@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: lms
+  name: lms-http
+  namespace: lms
+spec:
+  ports:
+  - name: http
+    nodePort: 30873
+    port: 9000
+    protocol: TCP
+    targetPort: 9000
+  selector:
+    app: lms
+  type: NodePort
