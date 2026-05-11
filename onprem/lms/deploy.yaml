@@ -22,7 +22,7 @@ spec:
         - containerPort: 30873
         env:
         - name: HTTP_PORT
-          value: 30873
+          value: "30873"
         volumeMounts:
         - mountPath: /music
           name: music-volume
