@@ -15,15 +15,3 @@
     - name: Install tools for devops
       import_role:
         name: tools
-
-    - name: Install Grafana
-      import_role:
-        name: grafana
-
-    - name: Install Prometheus
-      import_role:
-        name: prometheus
-
-    - name: Install Loki and Promtail
-      import_role:
-        name: logging

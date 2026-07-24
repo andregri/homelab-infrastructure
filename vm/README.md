@@ -72,9 +72,10 @@ homelab | SUCCESS => {
 }
 ```
 
-### 7. Install all tools on the server (it will ask the server password):
+### 7a. Install Minikube + Grafana on the server (it will ask the server password):
 ```
-make install
+make install-minikube
+make install-grafana-stack
 ```
 
 ### SSH to the machine:
