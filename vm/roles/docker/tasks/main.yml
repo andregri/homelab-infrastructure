@@ -43,3 +43,6 @@
     name: "{{ ansible_user }}"
     groups: docker
     append: true
+
+- name: Reset SSH connection to pick up new group membership
+  ansible.builtin.meta: reset_connection

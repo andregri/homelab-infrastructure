@@ -2,15 +2,18 @@
 # tasks file for loki
 - name: One way to avoid apt_key once it is removed from your distro, armored keys should use .asc extension, binary should use .gpg
   block:
-    - name: somerepo | no apt key
+    - name: Download Grafana GPG key
       ansible.builtin.get_url:
         url: https://apt.grafana.com/gpg.key
-        dest: /etc/apt/keyrings/grafana.gpg
+        dest: /etc/apt/keyrings/grafana.asc
+        mode: '0644'
 
-    - name: somerepo | apt source
+    - name: Add Grafana APT repository
       ansible.builtin.apt_repository:
-        repo: "deb https://apt.grafana.com stable main"
+        repo: "deb [signed-by=/etc/apt/keyrings/grafana.asc] https://apt.grafana.com stable main"
+        filename: grafana
         state: present
+        update_cache: true
 
 - name: Install promtail and loki
   apt:

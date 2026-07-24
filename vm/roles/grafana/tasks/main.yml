@@ -62,3 +62,14 @@
     rule: allow
     port: '3000'
     proto: tcp
+
+- name: Get Grafana admin password
+  ansible.builtin.shell:
+    cmd: "grep admin_password /etc/grafana/grafana.ini"
+  become: true
+  register: grafana_password
+  changed_when: false
+
+- name: Print Grafana admin password
+  ansible.builtin.debug:
+    var: grafana_password.stdout
