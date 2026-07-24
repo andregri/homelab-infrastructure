@@ -2,7 +2,12 @@
 
 ## Acloudguru server
 
-If you have created a Ubuntu server on acloudguru follow the following steps:
+If you have created a Ubuntu server on acloudguru follow the steps below.
+
+Server specs:
+- OS: Ubuntu 22.04 - Jammy Jellyfish
+- size: 8
+- regione: Europe
 
 ### 1. Copy the public HOSTNAME of the server from a cloudguru console and export the env variable:
 
