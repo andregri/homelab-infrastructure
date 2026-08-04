@@ -21,3 +21,6 @@ install-grafana:
 
 install-cluster-api-operator:
 	ansible-playbook install-cluster-api-operator.yaml -i inventory.yaml --ask-become-pass
+
+create-kubeadm-cluster:
+	ansible-playbook create-kubeadm-cluster.yaml -i inventory-multi-node.yaml --ask-become-pass

@@ -1,0 +1,60 @@
+- name: Install kubeadm
+  hosts: all
+  gather_facts: yes
+  become: true
+
+  tasks:
+    - name: Install kubeadm using role
+      import_role:
+        name: kubeadm
+  
+- name: Init control plane
+  hosts: control_plane
+  gather_facts: yes
+  become: true
+  tasks:
+    - name: kubeadm init
+      ansible.builtin.shell:
+        cmd: kubeadm init --pod-network-cidr=192.168.0.0/16 --kubernetes-version "{{ k8s_release_version }}"
+        creates: /etc/kubernetes/admin.conf
+      register: kubeadm_init
+      changed_when: kubeadm_init.rc == 0
+    
+    - name: Create .kube directory
+      ansible.builtin.file:
+        path: /home/{{ ansible_user }}/.kube
+        state: directory
+        mode: "0755"
+        owner: "{{ ansible_user }}"
+
+    - name: Copy admin.conf to user's kube config
+      ansible.builtin.copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /home/{{ ansible_user }}/.kube/config
+        remote_src: true
+        mode: "0644"
+        owner: "{{ ansible_user }}"
+
+    - name: Get join command
+      ansible.builtin.shell:
+        cmd: kubeadm token create --print-join-command
+      register: join_command
+      changed_when: false
+    
+    - name: Allow all access to tcp port 6443
+      community.general.ufw:
+        rule: allow
+        port: '6443'
+        proto: tcp
+
+- name: Join worker nodes to the cluster
+  hosts: workers
+  gather_facts: yes
+  become: true
+  tasks:
+    - name: Execute join command
+      command: "{{ hostvars[groups['control_plane'][0]].join_command.stdout }}"
+
+    # - name: Label the node
+    #   command: kubectl label node {{ inventory_hostname }} node-role.kubernetes.io/worker=worker
+    #   delegate_to: control_plane

@@ -1,0 +1,141 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for roles/kubeadm
+- name: Get mac address
+  ansible.builtin.shell:
+    cmd: "ip link show | grep 'link/ether' | awk '{print $2}'"
+  become: true
+  register: mac_address
+  changed_when: false
+
+- name: Print MAC address
+  ansible.builtin.debug:
+    var: mac_address.stdout
+
+- name: Get product_uuid
+  ansible.builtin.shell:
+    cmd: "cat /sys/class/dmi/id/product_uuid"
+  become: true
+  register: product_uuid
+  changed_when: false
+
+- name: Print product_uuid
+  ansible.builtin.debug:
+    var: product_uuid.stdout
+
+- name: Swap configuration
+  ansible.builtin.shell:
+    cmd: "swapoff -a"
+  become: true
+
+- name: Enable IPv4 forwarding
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    state: present
+    reload: yes
+
+###
+
+- name: Install container runtime
+  import_role:
+    name: containerd
+
+###
+
+- name: Set Kubernetes release version v1.33.12
+  ansible.builtin.set_fact:
+    k8s_release_version: "v1.33.12"
+
+- name: Set Kubernetes release arch
+  ansible.builtin.set_fact:
+    kubernetes_arch: amd64
+
+- name: Set download directory
+  ansible.builtin.set_fact:
+    download_dir: /usr/local/bin
+
+- name: Ensure download directory exists
+  ansible.builtin.file:
+    path: "{{ download_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Download kubeadm and kubelet
+  ansible.builtin.get_url:
+    url: "https://dl.k8s.io/release/{{ k8s_release_version }}/bin/linux/{{ kubernetes_arch }}/{{ item }}"
+    dest: "{{ download_dir }}/{{ item }}"
+    mode: "0755"
+  loop:
+    - kubeadm
+    - kubelet
+
+### 
+
+- name: Set Kubernetes release version
+  ansible.builtin.set_fact:
+    release_version: "v0.16.2"
+
+- name: Ensure kubelet systemd drop-in directory exists
+  ansible.builtin.file:
+    path: /usr/lib/systemd/system/kubelet.service.d
+    state: directory
+    mode: "0755"
+
+- name: Download and install kubelet.service
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/kubernetes/release/{{ release_version }}/cmd/krel/templates/latest/kubelet/kubelet.service"
+    dest: /tmp/kubelet.service
+    mode: "0644"
+
+- name: Replace binary path in kubelet.service
+  ansible.builtin.replace:
+    path: /tmp/kubelet.service
+    regexp: '/usr/bin'
+    replace: "{{ download_dir }}"
+
+- name: Install kubelet.service
+  ansible.builtin.copy:
+    src: /tmp/kubelet.service
+    dest: /usr/lib/systemd/system/kubelet.service
+    remote_src: true
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Download kubeadm systemd configuration
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/kubernetes/release/{{ release_version }}/cmd/krel/templates/latest/kubeadm/10-kubeadm.conf"
+    dest: /tmp/10-kubeadm.conf
+    mode: "0644"
+
+- name: Replace binary path in kubeadm configuration
+  ansible.builtin.replace:
+    path: /tmp/10-kubeadm.conf
+    regexp: '/usr/bin'
+    replace: "{{ download_dir }}"
+
+- name: Install kubeadm systemd configuration
+  ansible.builtin.copy:
+    src: /tmp/10-kubeadm.conf
+    dest: /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
+    remote_src: true
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Start kubelet with systemd
+  ansible.builtin.systemd_service:
+    state: restarted
+    name: kubelet
+    daemon_reload: true
+    enabled: true
+
+###
+
+- name: Install kubectl 
+  ansible.builtin.get_url:
+    url: https://dl.k8s.io/release/{{ k8s_release_version }}/bin/linux/amd64/kubectl
+    checksum: sha256:https://dl.k8s.io/release/{{ k8s_release_version }}/bin/linux/amd64/kubectl.sha256
+    dest: /usr/local/bin/kubectl
+    mode: '0755'

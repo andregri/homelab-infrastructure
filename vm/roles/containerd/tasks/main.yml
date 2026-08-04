@@ -1,0 +1,51 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for roles/containerd
+- name: Download containerd v2.3.3
+  ansible.builtin.get_url:
+    url: https://github.com/containerd/containerd/releases/download/v2.3.3/containerd-2.3.3-linux-amd64.tar.gz
+    checksum: sha256:https://github.com/containerd/containerd/releases/download/v2.3.3/containerd-2.3.3-linux-amd64.tar.gz.sha256sum
+    dest: /opt/containerd-2.3.3-linux-amd64.tar.gz
+
+- name: Extract archive
+  ansible.builtin.unarchive:
+    src: /opt/containerd-2.3.3-linux-amd64.tar.gz
+    dest: /usr/local
+    remote_src: yes
+
+- name: Create containerd systemd service file
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/containerd/containerd/main/containerd.service
+    dest: /usr/lib/systemd/system/containerd.service
+
+- name: Start containerd with systemd
+  ansible.builtin.systemd_service:
+    state: restarted
+    name: containerd
+    daemon_reload: true
+    enabled: true
+
+- name: Install runc 1.5.1
+  ansible.builtin.get_url:
+    url: https://github.com/opencontainers/runc/releases/download/v1.5.1/runc.amd64
+    checksum: sha256:177df879d50c913eb205e898d5c1c05a18f574053c0ce5524c471208eaf06f6f
+    dest: /usr/local/sbin/runc
+    mode: '0755'
+
+- name: Ensure /opt/cni/bin directory exists
+  ansible.builtin.file:
+    path: /opt/cni/bin
+    state: directory
+    mode: "0755"
+
+- name: Download cni plugins v1.9.1
+  ansible.builtin.get_url:
+    url: https://github.com/containernetworking/plugins/releases/download/v1.9.1/cni-plugins-linux-amd64-v1.9.1.tgz
+    checksum: sha256:https://github.com/containernetworking/plugins/releases/download/v1.9.1/cni-plugins-linux-amd64-v1.9.1.tgz.sha256
+    dest: /opt/cni-plugins-linux-amd64-v1.9.1.tgz
+
+- name: Extract archive
+  ansible.builtin.unarchive:
+    src: /opt/cni-plugins-linux-amd64-v1.9.1.tgz
+    dest: /opt/cni/bin
+    remote_src: yes
