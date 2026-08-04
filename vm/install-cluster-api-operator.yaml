@@ -1,0 +1,139 @@
+- name: Install Helm and ClusterAPI operator
+  hosts: all
+  gather_facts: yes
+  become: true
+
+  tasks:
+    - name: Install Helm using role
+      import_role:
+        name: helm
+    
+    - name: Install kubectl
+      ansible.builtin.get_url:
+        url: https://dl.k8s.io/release/v1.36.3/bin/linux/amd64/kubectl
+        dest: /usr/local/bin/kubectl
+        mode: '0755'
+
+    # https://cluster-api.sigs.k8s.io/user/troubleshooting#cluster-api-with-docker----too-many-open-files
+    - name: Configure inotify sysctl settings
+      ansible.posix.sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        state: present
+        reload: true
+      loop:
+        - { name: "fs.inotify.max_user_watches", value: "1048576" }
+        - { name: "fs.inotify.max_user_instances", value: "8192" }
+
+    - name : Install kind
+      ansible.builtin.get_url:
+        url: https://kind.sigs.k8s.io/dl/v0.32.0/kind-linux-amd64
+        dest: /usr/local/bin/kind
+        mode: '0755'
+
+    - name: Check if kind cluster exists
+      ansible.builtin.command:
+        cmd: kind get clusters
+      register: kind_clusters
+      changed_when: false
+      failed_when: false
+
+    - name: Create kind cluster
+      ansible.builtin.command:
+        cmd: kind create cluster --name kind
+      when: kind_clusters.rc == 0 and 'kind' not in kind_clusters.stdout_lines
+
+    - name: Export kind kubeconfig
+      ansible.builtin.shell:
+        cmd: kind get kubeconfig --name kind > "/home/{{ ansible_user }}/.kube/kind.config"
+
+    - name: test connection to kind cluster
+      ansible.builtin.command:
+        cmd: kubectl get nodes --kubeconfig "/home/{{ ansible_user }}/.kube/kind.config"
+      register: kubectl_output
+      changed_when: false
+      failed_when: kubectl_output.rc != 0
+
+    # helm repo add capi-operator https://kubernetes-sigs.github.io/cluster-api-operator
+    - name: Add capi-operator chart repo
+      kubernetes.core.helm_repository:
+        name: capi-operator
+        repo_url: "https://kubernetes-sigs.github.io/cluster-api-operator"
+
+    # helm repo add jetstack https://charts.jetstack.io --force-update
+    - name: Add jetstack chart repo
+      kubernetes.core.helm_repository:
+        name: jetstack
+        repo_url: "https://charts.jetstack.io"
+
+    # helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --set installCRDs=true
+    - name: Deploy cert-manager
+      kubernetes.core.helm:
+        name: cert-manager
+        chart_ref: jetstack/cert-manager
+        release_namespace: cert-manager
+        create_namespace: true
+        update_repo_cache: true
+        kubeconfig: "/home/{{ ansible_user }}/.kube/kind.config"
+        values:
+          installCRDs: true
+    
+    # helm install capi-operator capi-operator/cluster-api-operator --create-namespace -n capi-operator-system \
+    #   --set infrastructure.docker.enabled=true  --wait --timeout 90s
+    - name: Deploy ClusterAPI Operator
+      kubernetes.core.helm:
+        name: capi-operator
+        chart_ref: capi-operator/cluster-api-operator
+        release_namespace: capi-operator-system
+        create_namespace: true
+        update_repo_cache: true
+        kubeconfig: "/home/{{ ansible_user }}/.kube/kind.config"
+        values:
+          infrastructure:
+            docker:
+              enabled: true
+        wait: true
+        wait_timeout: 90s
+
+    - name: Install Kubernetes Python client
+      ansible.builtin.apt:
+        name: python3-kubernetes
+        state: present
+        update_cache: true
+
+    - name: Copy manifests to target machine
+      ansible.builtin.copy:
+        src: manifests/cluster-api/
+        dest: /opt/manifests/cluster-api/
+
+    - name: Deploy Cluster API components
+      kubernetes.core.k8s:
+        state: present
+        src: /opt/manifests/cluster-api/core-provider.yaml
+        kubeconfig: "/home/{{ ansible_user }}/.kube/kind.config"
+
+    - name: Create a simple cluster with Cluster API and Docker provider
+      kubernetes.core.k8s:
+        state: present
+        src: /opt/manifests/cluster-api/docker-cluster.yaml
+        kubeconfig: "/home/{{ ansible_user }}/.kube/kind.config"
+    
+    - name: Get workload cluster kubeconfig Secret
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Secret
+        name: my-cluster-kubeconfig
+        namespace: default
+        kubeconfig: "/home/{{ ansible_user }}/.kube/kind.config"
+      register: kubeconfig_secret
+
+    - name: Decode kubeconfig
+      ansible.builtin.set_fact:
+        workload_kubeconfig: >-
+          {{ kubeconfig_secret.resources[0].data.value | b64decode }}
+
+    - name: Write kubeconfig
+      ansible.builtin.copy:
+        content: "{{ workload_kubeconfig }}"
+        dest: "/home/{{ ansible_user }}/.kube/my-cluster.config"
+        mode: "0600"

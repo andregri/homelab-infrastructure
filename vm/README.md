@@ -17,6 +17,11 @@ Server specs:
 export HOSTNAME="fb3d98993e1c.mylabserver.com"
 ```
 
+If hostname doesn't work because DNS didn't propagate, use public ip:
+```
+export HOSTNAME="3.8.172.95"
+```
+
 ### 2. Login into the server and change the temporary password:
 ```
 ssh cloud_user@$HOSTNAME
