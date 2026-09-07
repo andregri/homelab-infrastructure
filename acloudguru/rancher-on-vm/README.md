@@ -2,20 +2,20 @@
 
 ## Machine type
 - OS: OpenSUSE Leap 15.5
-- size: 4
+- size: 8
 
 ## 1. Check virtual ip address
 
 Export env vars:
 ```bash
 export HOSTNAME="fb3d98993e1c.mylabserver.com"
-export PUBLIC_IP="35.179.121.214"
+export PUBLIC_IP="18.171.55.171"
 ```
 
 Check virtual ip address from my pc:
 ```bash
 andreagrillo@KPDOK77R6M6Y9P ~ % host fb3d98993e1c.mylabserver.com
-fb3d98993e1c.mylabserver.com has address 35.179.121.214
+fb3d98993e1c.mylabserver.com has address 18.171.55.171
 ```
 
 ## 2. Fix grub configurations to enable cgroupv2
@@ -91,7 +91,7 @@ Create config file:
 ```bash
 cat > /etc/rancher/rke2/config.yaml <<EOF
 tls-san:
-  - $(hostname)
+  - $(hostname).mylabserver.com
 EOF
 ```
 
@@ -115,7 +115,7 @@ chown cloud_user:users /home/cloud_user/rke2.yaml
 
 Copy the kubeconfig file:
 ```bash
-scp -i ./key cloud_user@${HOSTNAME}:/home/cloud_user/rke2.yaml ${HOME}/.kube/rancher.yaml
+scp -i ./ssh/key cloud_user@${HOSTNAME}:/home/cloud_user/rke2.yaml ${HOME}/.kube/rancher.yaml
 ```
 
 Replace the address in the kubeconfig file:
@@ -329,37 +329,165 @@ metadata:
   namespace: metallb-system
 spec:
   addresses:
-  - 172.31.100.169/32
+  - ${PUBLIC_IP}/32
   serviceAllocation:
     priority: 100
     serviceSelectors:
     - matchExpressions:
-      - {key: app.kubernetes.io/name, operator: In, values: [rke2-ingress-nginx]}
+      - {key: app.kubernetes.io/name, operator: In, values: [ingress-nginx]}
 EOF
 ```
 
 Create nginx ingress:
 ```bash
+helm upgrade --install ingress-nginx ingress-nginx --kubeconfig=${HOME}/.kube/rancher.yaml --kube-insecure-skip-tls-verify \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx --create-namespace \
+  --set-string controller.config.use-forwarded-headers="true" \
+  --set-string controller.config.enable-real-ip="true" \
+  --set controller.publishService.enabled=true \
+  --set controller.service.enabled=true \
+  --set controller.service.type=LoadBalancer \
+  --set controller.service.externalTrafficPolicy=Local
+
+Release "ingress-nginx" does not exist. Installing it now.
+NAME: ingress-nginx
+LAST DEPLOYED: Mon Sep  7 09:47:59 2026
+NAMESPACE: ingress-nginx
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+The ingress-nginx controller has been installed.
+It may take a few minutes for the load balancer IP to be available.
+You can watch the status by running 'kubectl get service --namespace ingress-nginx ingress-nginx-controller --output wide --watch'
+
+An example Ingress that makes use of the controller:
+  apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    name: example
+    namespace: foo
+  spec:
+    ingressClassName: nginx
+    rules:
+      - host: www.example.com
+        http:
+          paths:
+            - pathType: Prefix
+              backend:
+                service:
+                  name: exampleService
+                  port:
+                    number: 80
+              path: /
+    # This section is only required if TLS is to be enabled for the Ingress
+    tls:
+      - hosts:
+        - www.example.com
+        secretName: example-tls
+
+If TLS is enabled for the Ingress, a Secret containing the certificate and key must also be provided:
+
+  apiVersion: v1
+  kind: Secret
+  metadata:
+    name: example-tls
+    namespace: foo
+  data:
+    tls.crt: <base64 encoded cert>
+    tls.key: <base64 encoded key>
+  type: kubernetes.io/tls
+```
+
+Monitor the service:
+```bash
+kubectl get svc -n ingress-nginx --kubeconfig=${HOME}/.kube/rancher.yaml --insecure-skip-tls-verify
+
+NAME                                 TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)                      AGE
+ingress-nginx-controller             LoadBalancer   10.43.164.135   172.31.100.169   80:30768/TCP,443:32409/TCP   14m
+ingress-nginx-controller-admission   ClusterIP      10.43.132.141   <none>           443/TCP                      14m
+```
+
+## 7. Install Rancher server
+Add repo:
+```bash
+helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
+```
+
+Install the rancher helm with certificates from file:
+```bash
+helm upgrade --install rancher rancher-latest/rancher \
+  --kubeconfig=${HOME}/.kube/rancher.yaml --kube-insecure-skip-tls-verify \
+  --namespace cattle-system \
+  --set hostname=${HOSTNAME} \
+  --set bootstrapPassword=admin \
+  --set replicas=1 \
+  --version 2.15.1 \
+  --set ingress.tls.source=secret \
+  --set privateCA=true
+
+
+Release "rancher" does not exist. Installing it now.
+NAME: rancher
+LAST DEPLOYED: Mon Sep  7 12:27:04 2026
+NAMESPACE: cattle-system
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+Rancher Server has been installed. Rancher may take several minutes to fully initialize.
+
+Please standby while Certificates are being issued, Containers are started and the Ingress rule comes up.
+
+Check out our docs at https://rancher.com/docs/
+
+## First Time Login
+
+If you provided your own bootstrap password during installation, browse to https://fb3d98993e1c.mylabserver.com to get started.
+If this is the first time you installed Rancher, get started by running this command and clicking the URL it generates:
+
+echo https://fb3d98993e1c.mylabserver.com/dashboard/?setup=$(kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='{{.data.bootstrapPassword|base64decode}}')
+
+To get just the bootstrap password on its own, run:
+
+kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='{{.data.bootstrapPassword|base64decode}}{{ "\n" }}'
+
+
+Happy Containering!
+```
+
+Monitor the deployment:
+```bash
+kubectl -n cattle-system rollout status deploy/rancher --kubeconfig=${HOME}/.kube/rancher.yaml --insecure-skip-tls-verify
+kubectl -n cattle-system get po -w --kubeconfig=${HOME}/.kube/rancher.yaml --insecure-skip-tls-verify
+kubectl -n cattle-system logs -f deploy/rancher --kubeconfig=${HOME}/.kube/rancher.yaml --insecure-skip-tls-verify
+```
+
+## When restarting the A Cloud Guru machine
+Update the public ip of the nginx-ingress load balancer:
+```bash
 cat <<EOF | kubectl apply --kubeconfig=${HOME}/.kube/rancher.yaml --insecure-skip-tls-verify -f -
-apiVersion: helm.cattle.io/v1
-kind: HelmChartConfig
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
 metadata:
-  name: rke2-ingress-nginx
-  namespace: kube-system
+  name: ingress-ippool
+  namespace: metallb-system
 spec:
-  valuesContent: |-
-    controller:
-      config:
-        use-forwarded-headers: "true"
-        enable-real-ip: "true"
-      publishService:
-        enabled: true
-      service:
-        enabled: true
-        type: LoadBalancer
-        externalTrafficPolicy: Local
+  addresses:
+  - ${PUBLIC_IP}/32
+  serviceAllocation:
+    priority: 100
+    serviceSelectors:
+    - matchExpressions:
+      - {key: app.kubernetes.io/name, operator: In, values: [ingress-nginx]}
 EOF
 ```
 
-kubectl get HelmChartConfig -n kube-system --kubeconfig=${HOME}/.kube/rancher.yaml --insecure-skip-tls-verify
-kubectl get svc -n kube-system --kubeconfig=${HOME}/.kube/rancher.yaml --insecure-skip-tls-verify
+## Cleanup
+Uninstall rancher server:
+```bash
+helm uninstall rancher -n cattle-system --kubeconfig=${HOME}/.kube/rancher.yaml --kube-insecure-skip-tls-verify
+```
