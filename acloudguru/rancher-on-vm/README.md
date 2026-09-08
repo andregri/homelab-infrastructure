@@ -9,7 +9,7 @@
 Export env vars:
 ```bash
 export HOSTNAME="fb3d98993e1c.mylabserver.com"
-export PUBLIC_IP="18.171.55.171"
+export PUBLIC_IP="13.40.170.72"
 ```
 
 Check virtual ip address from my pc:
