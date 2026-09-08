@@ -9,19 +9,25 @@
 Export env vars:
 ```bash
 export HOSTNAME="fb3d98993e1c.mylabserver.com"
-export PUBLIC_IP="13.40.170.72"
+export PUBLIC_IP="35.176.120.135"
+export PRIVATE_IP="172.31.119.169"
 ```
 
 Check virtual ip address from my pc:
 ```bash
 andreagrillo@KPDOK77R6M6Y9P ~ % host fb3d98993e1c.mylabserver.com
-fb3d98993e1c.mylabserver.com has address 18.171.55.171
+fb3d98993e1c.mylabserver.com has address 35.176.120.135
 ```
 
 ## 2. Fix grub configurations to enable cgroupv2
+Copy the ssh key:
+```bash
+make copy-key
+```
+
 Login:
 ```bash
-ssh cloud_user@${HOSTNAME}
+make ssh
 ```
 
 Get administration permissions:
@@ -65,6 +71,16 @@ Then reboot the node:
 reboot
 ```
 
+Login again:
+```bash
+make ssh
+```
+
+Get sudo access:
+```bash
+sudo su
+```
+
 Login and check cgroup version again:
 ```bash
 fb3d98993e1c:/home/cloud_user # stat -fc %T /sys/fs/cgroup
@@ -72,15 +88,6 @@ cgroup2fs
 ```
 
 ## 3. Install rke2 kubernetes cluster on the node
-Login:
-```bash
-ssh cloud_user@${HOSTNAME}
-```
-
-Get administration permissions:
-```bash
-sudo su
-```
 
 Create directory for rancher configurations:
 ```bash
@@ -113,7 +120,13 @@ chown cloud_user:users /home/cloud_user/rke2.yaml
 
 ## 3. Download kubeconfig file
 
-Copy the kubeconfig file:
+Exit from the machine:
+```bash
+exit
+exit
+```
+
+Copy the kubeconfig file locally:
 ```bash
 scp -i ./ssh/key cloud_user@${HOSTNAME}:/home/cloud_user/rke2.yaml ${HOME}/.kube/rancher.yaml
 ```
