@@ -352,36 +352,15 @@ kubectl -n cattle-system logs -f deploy/rancher --kubeconfig=${HOME}/.kube/ranch
 ## When restarting the A Cloud Guru machine
 Copy the kubeconfig file locally:
 ```bash
+export HOSTNAME="fb3d98993e1c.mylabserver.com"
+cd acloudguru/rancher-on-vm
 scp -i ./ssh/key cloud_user@${HOSTNAME}:/home/cloud_user/rke2.yaml ${HOME}/.kube/rancher.yaml
 ```
 
 Replace the address in the kubeconfig file:
 ```bash
+export PUBLIC_IP="34.243.45.96"
 sed -i "" "s/127.0.0.1/${PUBLIC_IP}/g" ${HOME}/.kube/rancher.yaml
-```
-
-Update the public ip of the nginx-ingress load balancer:
-```bash
-cat <<EOF | kubectl apply --kubeconfig=${HOME}/.kube/rancher.yaml --insecure-skip-tls-verify -f -
-apiVersion: metallb.io/v1beta1
-kind: IPAddressPool
-metadata:
-  name: ingress-ippool
-  namespace: metallb-system
-spec:
-  addresses:
-  - ${PUBLIC_IP}/32
-  serviceAllocation:
-    priority: 100
-    serviceSelectors:
-    - matchExpressions:
-      - {key: app.kubernetes.io/name, operator: In, values: [ingress-nginx]}
-EOF
-```
-
-Check the LoadBalancer service is updated:
-```bash
-kubectl get svc -n ingress-nginx --kubeconfig=${HOME}/.kube/rancher.yaml --insecure-skip-tls-verify
 ```
 
 ## Cleanup
