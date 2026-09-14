@@ -47,14 +47,24 @@
         port: '6443'
         proto: tcp
 
+###
+
 - name: Join worker nodes to the cluster
   hosts: workers
   gather_facts: yes
   become: true
   tasks:
     - name: Execute join command
-      command: "{{ hostvars[groups['control_plane'][0]].join_command.stdout }}"
+      ansible.builtin.shell:
+        cmd: "{{ hostvars[groups['control_plane'][0]].join_command.stdout }}"
+        creates: /etc/kubernetes/kubelet.conf
 
-    # - name: Label the node
-    #   command: kubectl label node {{ inventory_hostname }} node-role.kubernetes.io/worker=worker
-    #   delegate_to: control_plane
+- name: Relabel worker nodes
+  hosts: control_plane
+  gather_facts: yes
+  become_user: "{{ ansible_user }}"
+  tasks:
+    - name: Label the node
+      ansible.builtin.shell:
+        cmd: kubectl label node {{ item }} node-role.kubernetes.io/worker=worker
+      loop: "{{ groups['workers'] }}"

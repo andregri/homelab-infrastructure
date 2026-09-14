@@ -9,9 +9,9 @@ Create 3 servers on acloudguru with the following specifications:
 ## prepare env variables
 Export env vars:
 ```
-export NODE1=3.8.236.195
-export NODE2=18.133.238.248
-export NODE3=3.8.123.132
+export NODE1=3.10.154.223
+export NODE2=18.133.232.121
+export NODE3=13.40.123.96
 export ANSIBLE_HOST_KEY_CHECKING=False
 ```
 

@@ -1,14 +1,14 @@
 all:
   hosts:
-    node1:
+    fb3d98993e1c.mylabserver.com:
       ansible_host: "{{ lookup('env', 'NODE1') }}"
       ansible_user: cloud_user
       ansible_ssh_private_key_file: ./key
-    node2:
+    fb3d98993e2c.mylabserver.com:
       ansible_host: "{{ lookup('env', 'NODE2') }}"
       ansible_user: cloud_user
       ansible_ssh_private_key_file: ./key
-    node3:
+    fb3d98993e3c.mylabserver.com:
       ansible_host: "{{ lookup('env', 'NODE3') }}"
       ansible_user: cloud_user
       ansible_ssh_private_key_file: ./key
@@ -16,9 +16,9 @@ all:
   children:
     control_plane:
       hosts:
-        node1:
+        fb3d98993e1c.mylabserver.com:
 
     workers:
       hosts:
-        node2:
-        node3:
+        fb3d98993e2c.mylabserver.com:
+        fb3d98993e3c.mylabserver.com:
